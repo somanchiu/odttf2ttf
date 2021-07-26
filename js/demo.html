@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>odttf2ttf</title>
+    <style>
+        .file {
+            border: dashed;
+        }
+    </style>
+    <script src="odttf.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
+</head>
+<body>
+    <input type="file" id="inputfile" class="file" multiple>
+
+    <script type="text/javascript">
+        let odttf = new ODTTF();
+
+        document.getElementById('inputfile').addEventListener('change', function () {
+            for (let i = 0; i < this.files.length; i++) {
+                let guid = this.files[i].name.split(".")[0];
+
+                let fr = new FileReader();
+                fr.onload = function () {
+                    let fontData = new Uint8Array(fr.result);
+
+                    odttf.deobfuscate(fontData, guid);
+
+                    const font = opentype.parse(fontData.buffer);
+
+                    download(fontData, font.names.fullName["en"] + ".ttf");
+                }
+                fr.readAsArrayBuffer(this.files[i]);
+            }
+        });
+
+        function download(data, fileName) {
+            let blob = new Blob([data], {
+                type: 'application/octet-stream'
+            });
+
+            let url = window.URL.createObjectURL(blob);
+
+            a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
